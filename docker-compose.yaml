@@ -1,0 +1,76 @@
+version: '2'
+
+services:
+  cassandra:
+    hostname: cassandra
+    image: cassandra
+    volumes:
+      - "./cassandra/data:/var/lib/cassandra/data"
+      - "./cassandra/cfg:/etc/cassandra"
+      - "./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d"
+    ports:
+      - "9042:9042"
+      - "9160:9160"
+
+  nginx:
+   container_name: some-nginx11
+   image: nginx:1.13
+   restart: always
+   ports:
+   - 80:80
+   - 443:443
+   volumes:
+   - ./nginx/conf.d:/etc/nginx/conf.d
+
+  zoo1:
+    image: zookeeper:3.4.9
+    hostname: zoo1
+    ports:
+      - "2181:2181"
+    environment:
+        ZOO_MY_ID: 1
+        ZOO_PORT: 2181
+        ZOO_SERVERS: server.1=zoo1:2888:3888
+    volumes:
+      - ./zk-single-kafka-single/zoo1/data:/data
+      - ./zk-single-kafka-single/zoo1/datalog:/datalog
+
+  kafka1:
+    image: confluentinc/cp-kafka:4.1.0
+    hostname: kafka1
+    ports:
+      - "9092:9092"
+    environment:
+      # add the entry "127.0.0.1    kafka1" to your /etc/hosts file
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka1:9092"
+      KAFKA_ZOOKEEPER_CONNECT: "zoo1:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - ./zk-single-kafka-single/kafka1/data:/var/lib/kafka/data
+    depends_on:
+      - zoo1
+
+  producer1:
+    hostname: producer1
+    depends_on:
+      - kafka1
+    build: ./ruproducer/
+    volumes: 
+      - ./producer-data:/var/lib/cache/
+
+  app:
+    restart: always
+    build: ./app
+    working_dir: /app
+    depends_on:
+      - cassandra
+    volumes:
+      - ./app:/app
+      - ~/.m2:/root/.m2
+    expose:
+      - "8080"
+    command: mvn clean spring-boot:run
+
+

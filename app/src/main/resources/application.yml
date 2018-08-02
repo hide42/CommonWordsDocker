@@ -1,0 +1,18 @@
+app.name:
+  test
+spark.home:
+  c:/...
+master.uri:
+  local[2]
+badWords: и,не,в,the,на,i,что,to,and,a,а,по,in,за,у,of,с,но,как,из,no,нет,от,for,on,is,it,только,о,я,ты,you,это,так,my,me,we,меня,
+  все,im,all,that,так,with,like,that,тебя,где,by,so,dont,be,то,к,там,или,припев,this,1,2,3,4,5,6,7,8,9,0,мне,все,если,давай,уже,бы,под,он,до,же,нас,князь,когда,твои,ее,нам,мне,ей,мы,ни,вот,лишь,пока,есть,был,для,кто,мы,есть,быть,будет,был,твой,тебе,мой,во,без,да
+consumer.brokers:
+  kafka1:9092
+consumer.topics:
+  test1
+cassandra.table:
+  words1
+cassandra.keyspace:
+  sparkcassandrakeyspace
+cassandra.docker-host:
+  cassandra
